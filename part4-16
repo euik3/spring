@@ -1,0 +1,71 @@
+// controller/ArticleController.java/show()
+    @GetMapping("/articles/{id}")
+    public String show(@PathVariable Long id, Model model) {
+        log.info("id: " + id);
+        // 1. id를 조회해 데이터 가져오기
+        Article articleEntity = articleRepository.findById(id).orElse(null);
+        List<CommentDto> commentDtos = commentService.comments(id);
+        // 2. 모델에 데이터 등록하기
+        model.addAttribute("article", articleEntity);
+        model.addAttribute("commentDtos", commentDtos);
+        // 3. 뷰 페이지 반환하기
+        return "articles/show";
+    }
+
+
+
+// templates/articles/show.mustache
+{{>layouts/header}}
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Id</th>
+        <th scope="col">Title</th>
+        <th scope="col">Content</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{#article}}
+    <tr>
+        <th>{{id}}</th>
+        <td>{{title}}</td>
+        <td>{{content}}</td>
+    </tr>
+    {{/article}}
+    </tbody>
+</table>
+
+<a href="/articles/{{article.id}}/edit" class="btn btn-primary">Edit</a>
+<a href="/articles/{{article.id}}/delete" class="btn btn-danger">Delete</a>
+<a href="/articles">Go to Article List</a>
+
+{{>comments/_comments}} <!-- 상세 페이지에 댓글 뷰 파일 삽입 -->
+
+{{>layouts/footer}}
+
+
+
+// templates/comments/_comments.mustache
+<div>
+    <!-- 댓글 목록 보기 -->
+    {{>comments/_list}}
+    <!-- 새 댓글 작성하기 -->
+    {{>comments/_new}}
+</div>
+
+
+// templates/comments/_list.mustache
+<div id="comments-list">
+    {{#commentDtos}}
+        <div class="card m-2" id="comments-{{id}}">
+            <div class="card-header">
+                {{nickname}}
+            </div>
+
+            <div class="card-body">
+                {{body}}
+            </div>
+        </div>
+    {{/commentDtos}}
+</div>
